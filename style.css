@@ -1,0 +1,7 @@
+body { background: #111; color: #eee; font-family: monospace; padding: 1em; }
+.menu { margin-bottom: 1em; }
+button { background: #333; color: #eee; border: none; margin-right: 5px; padding: 5px 10px; }
+.section { display: none; }
+ul { list-style-type: none; padding: 0; }
+li { cursor: pointer; padding: 5px; }
+textarea { width: 100%; height: 60px; }
