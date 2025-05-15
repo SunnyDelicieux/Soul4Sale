@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Soul4Sale - Bibliothèque Féérique</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+  :root {
+    --bg: #2b0000;
+    --dark-bg: #190000;
+    --panel-bg: #330000;
+    --accent: #b12222;
+    --highlight: #ff4c4c;
+    --text: #f7c6c6;
+    --shadow: #7f0000cc;
+    --cursor: #ff1a1a;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0; 
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    user-select: none;
+    overflow: hidden;
+  }
+  a {
+    color: var(--highlight);
+    text-decoration: none;
+  }
+  a:hover {
+    text-decoration: underline;
+  }
+
+  header {
+    background: var(--dark-bg);
+    padding: 0.5rem 1rem;
+    border-bottom: 3px solid var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    user-select: text;
+  }
+  header h1 {
+    margin: 0;
+    font-size: 1.3rem;
+    letter-spacing: 0.15rem;
+  }
+  nav {
+    display: flex;
+    gap: 1rem;
+  }
+  nav button {
+    background: transparent;
+    border: none;
+    color: var(--highlight);
+    font-size: 1rem;
+    cursor: pointer;
+    font-weight: bold;
+    text-transform: uppercase;
+    padding: 0.3rem 0.7rem;
+    border-bottom: 2px solid transparent;
+    transition: border-color 0.3s ease;
+  }
+  nav button:hover, nav button.active {
+    border-color: var(--accent);
+  }
+
+  main {
+    display: flex;
+    height: calc(100vh - 56px);
+  }
+
+  #sidebar {
+    width: 220px;
+    background: var(--panel-bg);
+    border-right: 3px solid var(--accent);
+    padding: 1rem 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  #sidebar h2 {
+    margin-top: 0;
+    font-size: 1.1rem;
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 0.4rem;
+  }
+  #file-list button {
+    background: transparent;
+    border: none;
+    color: var(--text);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.95rem;
+    text-align: left;
+    padding: 0.4rem 0.2rem;
+    border-radius: 2px;
+  }
+  #file-list button:hover {
+    background: var(--accent);
+    color: #fff;
+  }
+  #file-list button.active {
+    background: var(--highlight);
+    color: var(--dark-bg);
+  }
+
+  #content {
+    flex-grow: 1;
+    background: var(--dark-bg);
+    padding: 1.5rem 2rem;
+    overflow-y: auto;
+    font-size: 1rem;
+    line-height: 1.35;
+    border-left: 3px solid var(--accent);
+    user-select: text;
+  }
+
+  #content pre {
+    white-space: pre-wrap;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.95rem;
+    color: var(--text);
+    background: #3a0000;
+    padding: 1rem;
+    border-radius: 4px;
+    box-shadow: inset 0 0 10px #7f0000aa;
+  }
+
+  #terminal {
+    margin-top: 1.3rem;
+    background: var(--panel-bg);
+    border: 3px solid var(--accent);
+    border-radius: 4px;
+    padding: 1rem 1.2rem;
+    display: flex;
+    flex-direction: column;
+    height: 240px;
+  }
+  #output {
+    flex-grow: 1;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+  }
+  #output div {
+    margin-bottom: 0.2rem;
+  }
+  #input-line {
+    margin-top: 0.8rem;
+    display: flex;
+    align-items: center;
+  }
+  #input-line span {
+    color: var(--highlight);
+    font-weight: bold;
+    font-size: 1.2rem;
+    user-select: none;
+  }
+  #command-input {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid var(--highlight);
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1.1rem;
+    outline: none;
+    padding: 0.3rem 0.5rem;
+    flex-grow: 1;
+    caret-color: var(--cursor);
+  }
+
+  /* Scrollbar */
+  #output::-webkit-scrollbar {
+    width: 8px;
+  }
+  #output::-webkit-scrollbar-thumb {
+    background-color: var(--accent);
+    border-radius: 4px;
+  }
+  #output::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .command {
+    color: var(--highlight);
+    user-select: text;
+  }
+  .error {
+    color: #ff5555;
+  }
+  .system {
+    color: var(--text);
+  }
+  .admin {
+    color: #ffaa55;
+  }
+
+  #community-board {
+    background: var(--panel-bg);
+    border-top: 3px solid var(--accent);
+    margin-top: 1.3rem;
+    color: var(--highlight);
+    font-size: 0.8rem;
+    padding: 0.7rem 1rem;
+    max-height: 80px;
+    overflow-y: auto;
+    box-shadow: inset 0 0 10px #7f000055;
+    user-select: text;
+  }
+
+  /* Custom Cursor */
+  #terminal:focus {
+    outline: none;
+  }
+  #terminal:focus #command-input {
+    border-bottom-color: var(--cursor);
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>SOUL4SALE DATABASE</h1>
+  <nav>
+    <button id="menu-files" class="active">Files</button>
+    <button id="menu-about">About</button>
+    <button id="menu-contact">Contact</button>
+  </nav>
+</header>
+<main>
+  <aside id="sidebar">
+    <h2>File downloads</h2>
+    <div id="file-list">
+      <button data-file="file_pacte_feerique" class="active">Pacte féerique</button>
+      <button data-file="file_manuel_sacrifice">Manuel du sacrifice</button>
+      <button data-file="file_theorie_effondrement">Théorie de l'effondrement</button>
+      <button data-file="file_maison_benie">Maison bénie</button>
+    </div>
+  </aside>
+  <section id="content">
+    <pre id="file-content">
+--- PACTE FÉERIQUE ---
+« Le clan, lié à la forêt, doit honorer l'ancien serment.
+Le sang verse les racines, le souffle nourrit les cimes.
+Ainsi la vie et la mort dansent sous l'œil des Zoryas. »
+--- Fin du document ---
+    </pre>
+    <div id="terminal" tabindex="0" aria-label="Terminal interactif">
+      <div id="output" role="log" aria-live="polite" aria-relevant="additions"></div>
+      <div id="input-line">
+        <span>&gt;</span>
+        <input type="text" id="command-input" autocomplete="off" aria-label="Entrer commande" />
+      </div>
+    </div>
+    <div id="community-board" aria-label="Board communautaire">
+      <div><strong>COMMUNITY BOARD</strong></div>
+      <div>Bienvenue dans la bibliothèque féerique. Veuillez respecter le rituel.</div>
+    </div>
+  </section>
+</main>
+
+<script>
+(() => {
+  const files = {
+    file_pacte_feerique: [
+      '--- PACTE FÉERIQUE ---',
+      '« Le clan, lié à la forêt, doit honorer l\'ancien serment.',
+      'Le sang verse les racines, le souffle nourrit les cimes.',
+      'Ainsi la vie et la mort dansent sous l\'œil des Zoryas. »',
+      '--- Fin du document ---'
+    ],
+    file_manuel_sacrifice: [
+      '--- MANUEL DU SACRIFICE ---',
+      '« Offrir sa propre essence pour protéger ce qui reste.',
+      'Le rituel demande courage et pureté.',
+      'Que l\'oubli balaie la douleur, et que la mémoire vive à travers la forêt. »',
+      '--- Fin du document ---'
+    ],
+    file_theorie_effondrement: [
+      '--- THÉORIE DE L\'EFFONDREMENT ---',
+      'Les lignes de force se brisent,',
+      'les anciens pactes s\'effacent,',
+      'la mémoire se fragmente et disparaît.',
+      'L\'effondrement approche.',
+      '--- Fin du document ---'
+    ],
+    file_maison_benie: [
+      '--- MAISON BÉNIE ---',
+      'Dans la maison bénie par les Zoryas,',
+      'les souvenirs s\'entrelacent,',
+      'protégés par le rituel ancestral.',
+      'N\'entrez pas sans l\'autorisation de l\'administrateur.',
+      '--- Fin du document ---'
+    ]
+  };
+
+  let currentFile = 'file_pacte_feerique';
+  let adminMode = false;
+  const password = '321436';
+
+  const fileListEl = document.getElementById('file-list');
+  const contentEl = document.getElementById('file-content');
+  const outputEl = document.getElementById('output');
+  const inputEl = document.getElementById('command-input');
+
+  function setActiveFile(fileKey) {
+    currentFile = fileKey;
+    // Affiche contenu fichier
+    if (files[fileKey]) {
+      contentEl.textContent = files[fileKey].join('\n');
+    } else {
+      contentEl.textContent = 'Fichier introuvable.';
+    }
+    // Active bouton dans la sidebar
+    [...fileListEl.querySelectorAll('button')].forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.file === fileKey);
+    });
+    inputEl.focus();
+  }
+
+  // Initial
+  setActiveFile(currentFile);
+
+  fileListEl.addEventListener('click', e => {
+    if (e.target.tagName === 'BUTTON') {
+      setActiveFile(e.target.dataset.file);
+    }
+  });
+
+  // Terminal output helpers
+  function printLine(text, className = '') {
+    const line = document.createElement('div');
+    line.textContent = text;
+    if (className) line.classList.add(className);
+    outputEl.appendChild(line);
+    outputEl.scrollTop = outputEl.scrollHeight;
+  }
+
+  // Commands handlers
+  function help() {
+    printLine('Commandes disponibles :', 'system');
+    printLine('load file_pacte_feerique');
+    printLine('load file_manuel_sacrifice');
+    printLine('load file_theorie_effondrement');
+    printLine('open administrator panel');
+  }
+
+  function adminHelp() {
+    printLine('Commandes administrateur :', 'admin');
+    printLine('administrator_help');
+    printLine('reload_sequence');
+    printLine('secret_pact');
+    printLine('souvenir_booth');
+    printLine('load file_maison_benie');
+    printLine('reload file_maison_benie');
+  }
+
+  // Cache password prompt state
+  let awaitingPassword = false;
+
+  function openAdminPanel() {
+    printLine('Mot de passe requis. Entrez le code ID :', 'system');
+    awaitingPassword = true;
+  }
+
+  function processCommand(cmd) {
+    const command = cmd.trim().toLowerCase();
+
+    if (awaitingPassword) {
+      if (cmd.trim() === password) {
+        adminMode = true;
+        printLine('Accès administrateur accordé.', 'admin');
+        awaitingPassword = false;
+        adminHelp();
+      } else {
+        printLine('Mot de passe incorrect.', 'error');
+        awaitingPassword = false;
+      }
+      return;
+    }
+
+    printLine('> ' + cmd, 'command');
+
+    switch (command) {
+      case 'help':
+        help();
+        break;
+      case 'open administrator panel':
+        openAdminPanel();
+        break;
+      case 'load file_pacte_feerique':
+      case 'load file_manuel_sacrifice':
+      case 'load file_theorie_effondrement':
+        {
+          const fileKey = command.split(' ')[1];
+          if (files[fileKey]) {
+            contentEl.textContent = files[fileKey].join('\n');
+            printLine(`Fichier "${fileKey}" chargé.`, 'system');
+          } else {
+            printLine('Fichier non trouvé.', 'error');
+          }
+        }
+        break;
+      default:
+        if (adminMode) {
+          switch (command) {
+            case 'administrator_help':
+              adminHelp();
+              break;
+            case 'reload_sequence':
+              printLine('Séquence rechargée...', 'admin');
+              break;
+            case 'secret_pact':
+              printLine('Pacte secret dévoilé : le clan des Zoryas veille toujours.', 'admin');
+              break;
+            case 'souvenir_booth':
+              printLine('Cabine de souvenirs activée.', 'admin');
+              break;
+            case 'load file_maison_benie':
+              contentEl.textContent = files.file_maison_benie.join('\n');
+              printLine('Fichier "file_maison_benie" chargé.', 'admin');
+              break;
+            case 'reload file_maison_benie':
+              printLine('Fichier "file_maison_benie" rechargé.', 'admin');
+              break;
+            default:
+              printLine('Commande inconnue en mode administrateur.', 'error');
+          }
+        } else {
+          printLine('Commande inconnue.', 'error');
+        }
+    }
+  }
+
+  inputEl.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const cmd = inputEl.value;
+      if (cmd.trim() !== '') {
+        processCommand(cmd);
+        inputEl.value = '';
+      }
+    }
+  });
+
+  // Menu navigation (Files / About / Contact)
+  const menuFilesBtn = document.getElementById('menu-files');
+  const menuAboutBtn = document.getElementById('menu-about');
+  const menuContactBtn = document.getElementById('menu-contact');
+
+  function showSection(section) {
+    switch (section) {
+      case 'files':
+        document.getElementById('sidebar').style.display = 'flex';
+        contentEl.style.display = 'block';
+        break;
+      case 'about':
+        document.getElementById('sidebar').style.display = 'none';
+        contentEl.style.display = 'block';
+        contentEl.textContent = [
+          'SOUL4SALE DATABASE',
+          '',
+          'Une base de données mystique où se mêlent souvenirs et légendes.',
+          'Conçue pour l\'expérience immersive de Vampire: La Mascarade dans un univers féérique brutaliste.',
+          '',
+          'Les fichiers visibles dépendent des droits d\'accès et du rituel accompli.',
+          '',
+          'Pour plus d\'information, utilisez la commande "help" dans le terminal.'
+        ].join('\n');
+        break;
+      case 'contact':
+        document.getElementById('sidebar').style.display = 'none';
+        contentEl.style.display = 'block';
+        contentEl.textContent = [
+          'CONTACT',
+          '',
+          'Pour toute question ou problème, veuillez contacter :',
+          'baba.yaga@shadowlands.example',
+          '',
+          'Ou déposer un message via le terminal.'
+        ].join('\n');
+        break;
+    }
+  }
+
+  menuFilesBtn.addEventListener('click', () => {
+    setActiveMenu('files');
+  });
+  menuAboutBtn.addEventListener('click', () => {
+    setActiveMenu('about');
+  });
+  menuContactBtn.addEventListener('click', () => {
+    setActiveMenu('contact');
+  });
+
+  function setActiveMenu(section) {
+    menuFilesBtn.classList.toggle('active', section === 'files');
+    menuAboutBtn.classList.toggle('active', section === 'about');
+    menuContactBtn.classList.toggle('active', section === 'contact');
+
+    showSection(section);
+  }
+
+  // Par défaut : files
+  setActiveMenu('files');
+
+  // Focus input on page load
+  inputEl.focus();
+})();
+</script>
+</body>
+</html>
